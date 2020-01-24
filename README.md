@@ -1,6 +1,5 @@
 ﻿# Student Information
 Name: Hieu Khuong
-TUID: 915399644
 Course: CIS4307 - Distributed Systems
 Spring 2020
 Homework 1
