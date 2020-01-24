@@ -13,11 +13,12 @@
 #include <fstream>
 #include <iostream>
 #include <ctime>
-#include <condition_variable>
+#include <algorithm>
+
 
 using namespace std;
 
-#define MAXSTRING 255
+#define MAXSTRING 512
 
 //Add a certain word to a small map
 map<string, int> addToMap(char *word, map<string, int> givenMap) {
@@ -26,12 +27,10 @@ map<string, int> addToMap(char *word, map<string, int> givenMap) {
     //Already exist, increase count
     if (iter != givenMap.end()) {
         givenMap.at(str) += 1;
-        int i = givenMap.size();
     }
         //Not exist, create one
     else {
         givenMap.insert(pair<string, int>(str, 1));
-        int j = givenMap.size();
     }
     return givenMap;
 }
@@ -47,20 +46,25 @@ void workInSegment(int section_num, char *fileName, int startLine, int endLine, 
         cout << "Thread" << section_num << "cannot open file" << endl;
         exit;
     }
-    const char delim[] = " ,./!@#$%^&*():-”\r\'\"\0";
+    const char delim[] = " ,.-!”“!@#$%^&*()\'\";:\\?/\n\r\t";
     while (fgets(line, sizeof(line), fptr) != NULL) {
-        if (count == endLine-1) {
+        
+		string str = string(line);
+		std::replace_if(str.begin(), str.end(), ::isdigit, ' ');
+		char *line2 = new char[str.length() + 1];
+		strcpy(line2, str.c_str());
+
+		if (count == endLine-1) {
             cout << "Thread " << section_num << " reached end of segment at line " << endLine << endl;
-            break;
+            cout << "Address of small map " << section_num << " is: " <<designatedMap <<endl;
+			break;
         }
         if (count >= startLine && count < endLine) {
             if (count == startLine) {
                 cout << "Thread " << section_num << " reached start of segment at line " << startLine << endl;
             }
-            word = strtok(line, delim);
+            word = strtok(line2, delim);
             while (word != NULL) {
-                //cout<<"Thread "<<section_num<<" -word:"<<word<<endl;
-
                 *designatedMap = addToMap(word, *designatedMap);
                 word = strtok(NULL, delim);
             }
@@ -96,7 +100,7 @@ int main(int argc, char *argv[]) {
     //Array to store pointers to small maps (which stores unique words and their occurrences of each segment
     vector<map<string, int> *> mapVector(segmentNumber);
     for (int i = 0; i < segmentNumber; i++) {
-        mapVector[i] = (map<std::string, int> *) (malloc(sizeof(map<string, int>)));
+		mapVector[i] = (map<std::string, int> *) (malloc(sizeof(map<string, int>)));
     }
     //Begin recording time
     time_t clock = time(nullptr);
@@ -116,16 +120,16 @@ int main(int argc, char *argv[]) {
     }
     //Join all threads
     for (auto &thread : threads) {
-        if (thread.joinable()) {
             thread.join();
-        }
     }
+	cout << "All threads done" <<endl;
     //Make a dictionary to store all unique words and occurrences
     map<string,int> dictionary;
     //Iterate through all small maps
     for (int i = 0; i < segmentNumber; i++) {
         map<string, int>::iterator iter = (mapVector[i])->begin();
-        while (iter != mapVector[i]->end()) {
+        
+		while (iter != mapVector[i]->end()) {
             string word = iter->first;
             int occurrence = iter->second;
 
@@ -143,8 +147,10 @@ int main(int argc, char *argv[]) {
             iter++;
         }
     }
+	
 	//End time
     time_t elapsed = time(nullptr) - clock;
+	
 	//Write the content of dictionary to output file
     ofstream myfile;
     myfile.open("hw1_out.txt");
@@ -153,13 +159,17 @@ int main(int argc, char *argv[]) {
 	myfile << "Time executed: " << elapsed << " seconds" << endl;
 	myfile << endl;
     map<string, int>::iterator it = dictionary.begin();
-    while (it != dictionary.end()) {
-        myfile << "Word:" << it->first << ":" << it->second << endl;
+    
+	while (it != dictionary.end()) {
+		string uniqueWord = it->first;
+		int countUnique = it->second;
+        myfile << uniqueWord << ":" << countUnique << endl;
         it++;
     }
     myfile.close();
     
-    cout << elapsed << " seconds passed" << endl;
+    
+	cout << elapsed << " seconds passed" << endl;
     cout << "Done\n";
 
     return 0;
