@@ -1,8 +1,8 @@
 ﻿# Student Information
-Name: Hieu Khuong
-Course: CIS4307 - Distributed Systems
-Spring 2020
-Homework 1
+- Name: Hieu Khuong
+- Course: CIS4307 - Distributed Systems
+- Spring 2020
+- Homework 1
 
 # Compile the code
 1. Open terminal
