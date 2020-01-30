@@ -2,7 +2,7 @@
 Name: Hieu Khuong  
 Course: CIS4307 - Distributed Systems  
 Spring 2020  
-Homework 2 - Network File Transfer
+Homework 1 - Word Frequency Count with MultiThread
 
 # Compile the code
 1. Open terminal
